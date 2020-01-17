@@ -24,13 +24,28 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("ComparableImplementedButEqualsNotOverridden")
+
+/**
+ * 主要是通过优先队列管理定时任务
+ */
 final class ScheduledFutureTask<V> extends PromiseTask<V> implements ScheduledFuture<V>, PriorityQueueNode {
+    /**
+     * 定时任务时间起点
+     */
     private static final long START_TIME = System.nanoTime();
 
+    /**
+     * 获得当前时间，这个是相对 START_TIME 来算的
+     */
     static long nanoTime() {
         return System.nanoTime() - START_TIME;
     }
 
+    /**
+     * @param delay 延迟时长，单位：纳秒
+     * @return 获得任务执行时间，也是相对 {@link #START_TIME} 来算的。
+     *         实际上，返回的结果，会用于 {@link #deadlineNanos} 字段
+     */
     static long deadlineNanos(long delay) {
         long deadlineNanos = nanoTime() + delay;
         // Guard against overflow
@@ -42,12 +57,28 @@ final class ScheduledFutureTask<V> extends PromiseTask<V> implements ScheduledFu
     }
 
     // set once when added to priority queue
+    // 当添加到优先队列后设定
     private long id;
 
+    /**
+     * 任务执行时间，即到了该时间，该任务就会被执行
+     */
     private long deadlineNanos;
+    /* 0 - no repeat, >0 - repeat at fixed rate, <0 - repeat with fixed delay */
+    /**
+     * 任务执行周期
+     *
+     * =0 - 只执行一次
+     * >0 - 按照计划执行时间计算
+     * <0 - 按照实际执行时间计算
+     *
+     */
     /* 0 - no repeat, >0 - repeat at fixed rate, <0 - repeat with fixed delay */
     private final long periodNanos;
 
+    /**
+     * 队列编号
+     */
     private int queueIndex = INDEX_NOT_IN_QUEUE;
 
     ScheduledFutureTask(AbstractScheduledEventExecutor executor,

@@ -39,10 +39,12 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
         }
     }
 
+    //是否是2的指数
     private static boolean isPowerOfTwo(int val) {
         return (val & -val) == val;
     }
 
+    // 如果是2的指数可提高效率 a % n = a & (n - 1) 类似HashMap
     private static final class PowerOfTwoEventExecutorChooser implements EventExecutorChooser {
         private final AtomicInteger idx = new AtomicInteger();
         private final EventExecutor[] executors;
